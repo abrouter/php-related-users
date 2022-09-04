@@ -21,7 +21,7 @@ class RelatedUsersCollection
         //updating child's
         foreach ($this->relatedUsers as $key => $childs) {
             foreach ($childs as $child) {
-                $this->handleChilds($key, $child);
+                $this->handleChilds((string) $key, (string) $child);
             }
         }
 
