@@ -16,7 +16,7 @@ class RelatedUsersCollection
     public function append(string $userId, string $relatedUserId): self
     {
         $this->appendTo($userId, $relatedUserId);
-        $this->handleChilds($userId, $relatedUserId);
+        $this->handleChilds((string)$userId, (string)$relatedUserId);
 
         //updating child's
         foreach ($this->relatedUsers as $key => $childs) {
@@ -31,8 +31,8 @@ class RelatedUsersCollection
     private function handleChilds(string $userId, string $relatedUserId): void
     {
         foreach ($this->relatedUsers[$userId] as $childId) {
-            $this->appendTo($childId, $userId);
-            $this->appendTo($childId, $relatedUserId);
+            $this->appendTo((string) $childId, (string)$userId);
+            $this->appendTo((string) $childId, (string) $relatedUserId);
         }
     }
 
