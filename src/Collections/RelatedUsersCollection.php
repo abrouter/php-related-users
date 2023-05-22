@@ -116,7 +116,7 @@ class RelatedUsersCollection
 
     public function getByUserId(string $userId): ?array
     {
-        return array_values($this->relatedUsers[$userId]) ?? null;
+        return empty($this->relatedUsers[$userId]) ? null : array_values($this->relatedUsers[$userId]);
     }
 
     public function getAll(): array
