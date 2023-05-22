@@ -9,15 +9,23 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class RelatedUsersCollectionTest extends BaseTestCase
 {
+    public function apply($func, array $arr): array
+    {
+        return array_map(function (array $val) use ($func) {
+            $func($val);
+            return $val;
+        }, $arr);
+    }
+
     public function testAppendingWithSingleUser()
     {
         $collection = new RelatedUsersCollection();
         $collection->append('user', 'relatedUser');
 
-        $this->assertEquals($collection->getAll(), [
+        $this->assertEquals($collection->getAllApply('sort'), $this->apply('sort', [
             'user' => ['relatedUser'],
             'relatedUser' => ['user'],
-        ]);
+        ]));
     }
 
     public function testAppendingWithMultipleUsers()
@@ -27,12 +35,12 @@ class RelatedUsersCollectionTest extends BaseTestCase
         $collection->append('user', 'relatedUser2');
         $collection->append('user', 'relatedUser3');
 
-        $this->assertEquals($collection->getAll(), [
+        $this->assertEquals($collection->getAllApply('sort'), $this->apply('sort', [
             'user' => ['relatedUser', 'relatedUser2', 'relatedUser3'],
             'relatedUser' => ['user', 'relatedUser2', 'relatedUser3'],
             'relatedUser2' => ['user', 'relatedUser', 'relatedUser3'],
             'relatedUser3' => ['user', 'relatedUser', 'relatedUser2'],
-        ]);
+        ]));
     }
 
     public function testAppendingWithSameUsers()
@@ -47,12 +55,12 @@ class RelatedUsersCollectionTest extends BaseTestCase
         $collection->append('relatedUser2', 'relatedUser3');
         $collection->append('relatedUser3', 'relatedUser2');
 
-        $this->assertEquals($collection->getAll(), [
+        $this->assertEquals($collection->getAllApply('sort'), $this->apply('sort', [
             'user' => ['relatedUser', 'relatedUser2', 'relatedUser3'],
             'relatedUser' => ['user', 'relatedUser2', 'relatedUser3'],
             'relatedUser2' => ['user', 'relatedUser', 'relatedUser3'],
             'relatedUser3' => ['user', 'relatedUser', 'relatedUser2'],
-        ]);
+        ]));
     }
 
     public function testAppendingViaChilds()
@@ -63,12 +71,12 @@ class RelatedUsersCollectionTest extends BaseTestCase
         $collection->append('relatedUser2', 'user');
         $collection->append('relatedUser3', 'user');
 
-        $this->assertEquals($collection->getAll(), [
+        $this->assertEquals($collection->getAllApply('sort'), $this->apply('sort', [
             'user' => ['relatedUser', 'relatedUser2', 'relatedUser3'],
             'relatedUser' => ['user', 'relatedUser2', 'relatedUser3'],
             'relatedUser2' => ['user', 'relatedUser', 'relatedUser3'],
             'relatedUser3' => ['user', 'relatedUser', 'relatedUser2'],
-        ]);
+        ]));
     }
 
     public function testGettingForAppendingViaChilds()
@@ -89,14 +97,23 @@ class RelatedUsersCollectionTest extends BaseTestCase
             ['user', 'relatedUser2', 'relatedUser3']
         );
 
+        $exp = ['user', 'relatedUser', 'relatedUser3'];
+        sort($exp);
+        $val = $collection->getByUserId('relatedUser2');
+        sort($val);
         $this->assertEquals(
-            $collection->getByUserId('relatedUser2'),
-            ['user', 'relatedUser', 'relatedUser3'],
+            $val,
+            $exp
         );
 
+        $val = $collection->getByUserId('relatedUser3');
+        $exp = ['user', 'relatedUser', 'relatedUser2'];
+        sort($val);
+        sort($exp);
+
         $this->assertEquals(
-            $collection->getByUserId('relatedUser3'),
-            ['user', 'relatedUser', 'relatedUser2']
+            $val,
+            $exp
         );
     }
 
@@ -112,7 +129,7 @@ class RelatedUsersCollectionTest extends BaseTestCase
         $collection->append('user2', 'user2Related2');
         $collection->append('user2', 'user2Related3');
 
-        $this->assertEquals($collection->getAll(), [
+        $this->assertEquals($collection->getAllApply('sort'), $this->apply('sort', [
             'user' => ['relatedUser', 'relatedUser2', 'relatedUser3'],
             'relatedUser' => ['user', 'relatedUser2', 'relatedUser3'],
             'relatedUser2' => ['user', 'relatedUser', 'relatedUser3'],
@@ -122,7 +139,7 @@ class RelatedUsersCollectionTest extends BaseTestCase
             'user2Related' => ['user2', 'user2Related2', 'user2Related3'],
             'user2Related2' => ['user2', 'user2Related', 'user2Related3'],
             'user2Related3' => ['user2', 'user2Related', 'user2Related2'],
-        ]);
+        ]));
     }
 
     public function testAppendingWithParallelRelatedUsersMerge()
@@ -140,7 +157,7 @@ class RelatedUsersCollectionTest extends BaseTestCase
         $collection->append('user', 'user2');
 
 
-        $this->assertEquals($collection->getAll(), [
+        $this->assertEquals($collection->getAllApply('sort'), $this->apply('sort', [
             'user' => [
                 'relatedUser',
                 'relatedUser2',
@@ -214,7 +231,7 @@ class RelatedUsersCollectionTest extends BaseTestCase
                 'relatedUser2',
                 'relatedUser3',
             ],
-        ]);
+        ]));
     }
 
     public function testAppendingWithParallelRelatedUsersMergeDirection2()
